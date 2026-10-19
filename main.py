@@ -1,0 +1,44 @@
+import os, argparse
+from dotenv import load_dotenv
+from openai import OpenAI
+
+
+def main():
+    parser = argparse.ArgumentParser(description="Chatbot")
+    parser.add_argument("user_prompt", type=str, help="User prompt")
+    verbose = parser.add_argument("--verbose", action="store_true", help="Enable verbose output")
+    args = parser.parse_args()
+    messages = [
+        {"role": "user", "content": args.user_prompt},
+    ]
+
+    load_dotenv()
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if api_key == None:
+        raise RuntimeError("The API_KEY is none")
+    
+    client = OpenAI(
+        base_url="https://openrouter.ai/api/v1",
+        api_key=api_key,
+    )
+    response = client.chat.completions.create(
+        model="openrouter/free",
+        messages=messages,    
+        )
+    
+    prompt_tokens = response.usage.prompt_tokens
+    completion_tokens = response.usage.completion_tokens
+    if prompt_tokens != None and completion_tokens != None and args.verbose:
+        print(f"User prompt: {args.verbose}\nPrompt tokens: {prompt_tokens}\nResponse tokens: {completion_tokens}") 
+        
+    elif prompt_tokens != None and completion_tokens != None:
+        print(response) 
+    else:    
+        raise RuntimeError("usages are None Types")
+
+
+
+    
+    
+if __name__ == "__main__":
+    main()
